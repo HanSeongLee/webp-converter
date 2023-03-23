@@ -12,6 +12,10 @@
     "image",
     "conversion"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HanSeongLee/webp-converter.git"
+  },
   "author": "HanSeong Lee <jkhanseong@gmail.com>",
   "license": "MIT",
   "dependencies": {
