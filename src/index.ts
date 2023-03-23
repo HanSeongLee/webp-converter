@@ -27,34 +27,42 @@ if (!fs.existsSync(outputDir)) {
     process.exit(1);
 }
 
-fs.readdir(inputDir, (err, files) => {
-    if (err) {
-        console.error(`Failed to read input directory "${inputDir}".`, err);
-        process.exit(1);
-    }
+function convertFile(inputFile: string, outputFile: string): void {
+    console.log(`Converting file "${inputFile}" to "${outputFile}"...`);
+
+    sharp(inputFile)
+        .webp()
+        .toFile(outputFile, (err) => {
+            if (err) {
+                console.error(`Failed to convert file "${inputFile}" to "${outputFile}".`, err);
+                process.exit(1);
+            }
+        });
+}
+
+function convertDirectory(inputDir: string, outputDir: string): void {
+    const files = fs.readdirSync(inputDir);
 
     files.forEach((file) => {
         const inputFile = path.join(inputDir, file);
-        const outputFile = path.join(outputDir, `${path.parse(file).name}.webp`);
 
         if (fs.statSync(inputFile).isDirectory()) {
-            return;
+            const subInputDir = inputFile;
+            const subOutputDir = path.join(outputDir, file);
+            fs.ensureDirSync(subOutputDir);
+            convertDirectory(subInputDir, subOutputDir);
+        } else {
+            const outputFile = path.join(outputDir, `${path.parse(file).name}.webp`);
+
+            if (path.parse(inputFile).ext.toLowerCase() !== '.jpg' && path.parse(inputFile).ext.toLowerCase() !== '.jpeg' &&
+                path.parse(inputFile).ext.toLowerCase() !== '.png') {
+                console.warn(`Unsupported file format "${path.parse(inputFile).ext}" for file "${inputFile}". Skipping file.`);
+                return;
+            }
+
+            convertFile(inputFile, outputFile);
         }
-
-        if (path.parse(inputFile).ext.toLowerCase() !== '.jpg' && path.parse(inputFile).ext.toLowerCase() !== '.jpeg' && path.parse(inputFile).ext.toLowerCase() !== '.png') {
-            console.warn(`Unsupported file format "${path.parse(inputFile).ext}" for file "${inputFile}". Skipping file.`);
-            return;
-        }
-
-        console.log(`Converting file "${inputFile}" to "${outputFile}"...`);
-
-        sharp(inputFile)
-            .webp()
-            .toFile(outputFile, (err) => {
-                if (err) {
-                    console.error(`Failed to convert file "${inputFile}" to "${outputFile}".`, err);
-                    process.exit(1);
-                }
-            });
     });
-});
+}
+
+convertDirectory(inputDir, outputDir);
