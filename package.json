@@ -1,0 +1,33 @@
+{
+  "name": "webp-converter",
+  "version": "1.0.0",
+  "description": "Converts JPEG and PNG images to WebP format.",
+  "main": "src/index.ts",
+  "scripts": {
+    "compile": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "webp",
+    "image",
+    "conversion"
+  ],
+  "author": "HanSeong Lee <jkhanseong@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^10.0.0",
+    "fs-extra": "^11.1.1",
+    "sharp": "^0.31.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-typescript": "^7.21.0",
+    "@types/fs-extra": "^11.0.1",
+    "@types/jest": "^29.5.0",
+    "@types/sharp": "^0.31.1",
+    "babel-jest": "^29.5.0",
+    "jest": "^29.5.0",
+    "typescript": "^5.0.2"
+  }
+}
