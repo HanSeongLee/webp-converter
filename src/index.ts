@@ -11,11 +11,13 @@ program
     .version(packageJson.version)
     .option('-i, --input <dir>', 'Input directory', 'public')
     .option('-o, --output <dir>', 'Output directory', 'public')
+    .option('-q, --quality <number>', 'Quality of the output image (1-100)', '80')
     .parse(process.argv);
 
 const options = program.opts();
 const inputDir = path.resolve(options.input);
 const outputDir = path.resolve(options.output);
+const quality = parseInt(options.quality, 10);
 
 if (!fs.existsSync(inputDir)) {
     console.error(`Input directory "${inputDir}" not found.`);
@@ -31,7 +33,7 @@ function convertFile(inputFile: string, outputFile: string): void {
     console.log(`Converting file "${inputFile}" to "${outputFile}"...`);
 
     sharp(inputFile)
-        .webp()
+        .webp({ quality: quality })
         .toFile(outputFile, (err) => {
             if (err) {
                 console.error(`Failed to convert file "${inputFile}" to "${outputFile}".`, err);
