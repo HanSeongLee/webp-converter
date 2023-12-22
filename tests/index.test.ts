@@ -26,8 +26,8 @@ describe('webp-converter', () => {
             expect(stderr).toBeFalsy();
 
             const expectedFiles = [
-                'apple.webp', 'banana.webp', 'orange.webp', 'subdir1/apple.webp',
-                'subdir1/subdir1-1/banana.webp', 'subdir2/banana.webp', 'subdir2/orange.webp'
+                'apple.webp', 'banana.webp', 'orange.webp', 'rotating_globe.webp',
+                'subdir1/apple.webp', 'subdir1/subdir1-1/banana.webp', 'subdir2/banana.webp', 'subdir2/orange.webp'
             ];
             const outputFiles = walkSync(outputDir, { directories: false });
 

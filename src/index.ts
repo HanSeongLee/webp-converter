@@ -48,8 +48,9 @@ function printHeader() {
 
 function convertFile(inputFile: string, outputFile: string, relativePath: string): void {
     const originalSize = fs.statSync(inputFile).size;
+    const animated = path.parse(inputFile).ext.toLowerCase() === '.gif';
 
-    sharp(inputFile)
+    sharp(inputFile, { animated })
         .webp({ quality: quality })
         .toBuffer()
         .then(outputBuffer => {
@@ -83,7 +84,7 @@ function convertDirectory(inputDir: string, outputDir: string, baseDir: string =
             const outputFile = path.join(outputDir, `${path.parse(file).name}.webp`);
 
             if (path.parse(inputFile).ext.toLowerCase() !== '.jpg' && path.parse(inputFile).ext.toLowerCase() !== '.jpeg' &&
-                path.parse(inputFile).ext.toLowerCase() !== '.png') {
+                path.parse(inputFile).ext.toLowerCase() !== '.png' && path.parse(inputFile).ext.toLowerCase() !== '.gif') {
                 console.warn(`Unsupported file format "${path.parse(inputFile).ext}" for file "${inputFile}". Skipping file.`);
                 return;
             }
