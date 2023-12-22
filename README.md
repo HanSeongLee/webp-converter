@@ -1,6 +1,6 @@
 # WebP Converter
 
-Converts JPEG and PNG images to WebP format.
+This tool converts JPEG, PNG, and GIF images to WebP format, providing details on the compression achieved for each file.
 
 ## Installation
 
@@ -18,6 +18,16 @@ webp-converter [options]
 
 - `-i, --input <dir>`: Input directory. Defaults to `public`.
 - `-o, --output <dir>`: Output directory. Defaults to `public`.
+- `-q, --quality <number>`: Set the quality of the output WebP images. Acceptable values are from 1 to 100. Defaults to 80.
+
+### Output
+
+For each file processed, the script outputs:
+
+- File path
+- Original size
+- Compressed size
+- Compression ratio
 
 ## Contributing
 
@@ -25,8 +35,7 @@ webp-converter [options]
 2. Install dependencies using `npm install`.
 3. Run tests using `npm test`.
 4. Make your changes and write tests if necessary.
-5. Ensure tests pass and code is formatted using `npm run lint`.
-6. Submit a pull request.
+5. Submit a pull request.
 
 ## License
 
