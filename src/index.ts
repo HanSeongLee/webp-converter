@@ -24,11 +24,25 @@ if (!fs.existsSync(inputPath)) {
 }
 
 const isInputFile = fs.statSync(inputPath).isFile();
-const outputDir = options.output
-    ? path.resolve(options.output)
-    : isInputFile
+
+let outputDir: string;
+
+if (options.output) {
+    const resolvedOutput = path.resolve(options.output);
+    const exists = fs.existsSync(resolvedOutput);
+
+    if (exists && !fs.statSync(resolvedOutput).isDirectory()) {
+        console.error(`Output path "${resolvedOutput}" is not a directory.`);
+        process.exit(1);
+    }
+
+    fs.ensureDirSync(resolvedOutput);
+    outputDir = resolvedOutput;
+} else {
+    outputDir = isInputFile
         ? path.dirname(inputPath)
         : inputPath;
+}
 
 function formatBytes(bytes: number, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
