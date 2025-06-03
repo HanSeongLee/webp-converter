@@ -16,7 +16,7 @@ webp-converter [options]
 
 ### Options
 
-- `-i, --input <dir>`: Input directory. Defaults to `public`.
+- `-i, --input <dir>`: Input file or directory. Defaults to `public`.
 - `-o, --output <dir>`: Output directory. Defaults to `public`.
 - `-q, --quality <number>`: Set the quality of the output WebP images. Acceptable values are from 1 to 100. Defaults to 80.
 
