@@ -26,11 +26,11 @@ if (!fs.existsSync(inputPath)) {
 const isInputFile = fs.statSync(inputPath).isFile();
 
 let outputDir: string;
-
 if (options.output) {
     const resolvedOutput = path.resolve(options.output);
     const exists = fs.existsSync(resolvedOutput);
 
+    // Must be directory
     if (exists && !fs.statSync(resolvedOutput).isDirectory()) {
         console.error(`Output path "${resolvedOutput}" is not a directory.`);
         process.exit(1);
@@ -39,20 +39,18 @@ if (options.output) {
     fs.ensureDirSync(resolvedOutput);
     outputDir = resolvedOutput;
 } else {
-    outputDir = isInputFile
-        ? path.dirname(inputPath)
-        : inputPath;
+    outputDir = isInputFile ? path.dirname(inputPath) : inputPath;
+}
+
+function isSupportedImage(ext: string) {
+    return ['.jpg', '.jpeg', '.png', '.gif'].includes(ext.toLowerCase());
 }
 
 function formatBytes(bytes: number, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
-
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
+    const k = 1024, dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
@@ -63,12 +61,13 @@ function printHeader() {
 
 function convertFile(inputFile: string, outputFile: string, relativePath: string): void {
     const originalSize = fs.statSync(inputFile).size;
-    const animated = path.parse(inputFile).ext.toLowerCase() === '.gif';
+    const animated = path.extname(inputFile).toLowerCase() === '.gif';
 
     sharp(inputFile, { animated })
-        .webp({ quality: quality })
+        .webp({ quality })
         .toBuffer()
         .then(outputBuffer => {
+            fs.ensureDirSync(path.dirname(outputFile));
             fs.writeFileSync(outputFile, outputBuffer);
             const compressedSize = outputBuffer.length;
             const compressionRatio = ((originalSize - compressedSize) / originalSize * 100).toFixed(2);
@@ -78,49 +77,44 @@ function convertFile(inputFile: string, outputFile: string, relativePath: string
             );
         })
         .catch(err => {
-            console.error(`Failed to convert file "${inputFile}" to "${outputFile}".`, err);
-            process.exit(1);
+            console.error(`Failed to convert file "${inputFile}" to "${outputFile}".`, err.message);
         });
 }
 
 function convertDirectory(inputDir: string, outputDir: string, baseDir: string = inputDir): void {
     const files = fs.readdirSync(inputDir);
 
-    files.forEach((file) => {
+    for (const file of files) {
         const inputFile = path.join(inputDir, file);
         const relativePath = path.relative(baseDir, inputFile);
 
         if (fs.statSync(inputFile).isDirectory()) {
-            const subInputDir = inputFile;
-            const subOutputDir = path.join(outputDir, file);
-            fs.ensureDirSync(subOutputDir);
-            convertDirectory(subInputDir, subOutputDir, baseDir);
+            convertDirectory(inputFile, path.join(outputDir, file), baseDir);
         } else {
-            const outputFile = path.join(outputDir, `${path.parse(file).name}.webp`);
-
-            if (path.parse(inputFile).ext.toLowerCase() !== '.jpg' && path.parse(inputFile).ext.toLowerCase() !== '.jpeg' &&
-                path.parse(inputFile).ext.toLowerCase() !== '.png' && path.parse(inputFile).ext.toLowerCase() !== '.gif') {
-                console.warn(`Unsupported file format "${path.parse(inputFile).ext}" for file "${inputFile}". Skipping file.`);
-                return;
+            const ext = path.extname(inputFile);
+            if (!isSupportedImage(ext)) {
+                console.warn(`Skipping unsupported file: ${inputFile}`);
+                continue;
             }
 
+            const outputFile = path.join(outputDir, relativePath).replace(ext, '.webp');
             convertFile(inputFile, outputFile, relativePath);
         }
-    });
+    }
 }
 
 printHeader();
 
 if (isInputFile) {
-    const ext = path.extname(inputPath).toLowerCase();
-    if (!['.jpg', '.jpeg', '.png', '.gif'].includes(ext)) {
+    const ext = path.extname(inputPath);
+    if (!isSupportedImage(ext)) {
         console.error(`Unsupported file format "${ext}" for file "${inputPath}".`);
         process.exit(1);
     }
 
-    const fileName = path.basename(inputPath, ext);
+    const baseName = path.basename(inputPath, ext);
     const relativePath = path.basename(inputPath);
-    const outputFile = path.join(outputDir, `${fileName}.webp`);
+    const outputFile = path.join(outputDir, `${baseName}.webp`);
     convertFile(inputPath, outputFile, relativePath);
 } else {
     convertDirectory(inputPath, outputDir);
