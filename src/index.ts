@@ -10,24 +10,25 @@ const packageJson = require('../package.json');
 program
     .version(packageJson.version)
     .option('-i, --input <dir>', 'Input directory', 'public')
-    .option('-o, --output <dir>', 'Output directory', 'public')
+    .option('-o, --output <dir>', 'Output directory (defaults to input path)', '')
     .option('-q, --quality <number>', 'Quality of the output image (1-100)', '80')
     .parse(process.argv);
 
 const options = program.opts();
-const inputDir = path.resolve(options.input);
-const outputDir = path.resolve(options.output);
+const inputPath = path.resolve(options.input);
 const quality = parseInt(options.quality, 10);
 
-if (!fs.existsSync(inputDir)) {
-    console.error(`Input directory "${inputDir}" not found.`);
+if (!fs.existsSync(inputPath)) {
+    console.error(`Input path "${inputPath}" not found.`);
     process.exit(1);
 }
 
-if (!fs.existsSync(outputDir)) {
-    console.error(`Output directory "${outputDir}" not found.`);
-    process.exit(1);
-}
+const isInputFile = fs.statSync(inputPath).isFile();
+const outputDir = options.output
+    ? path.resolve(options.output)
+    : isInputFile
+        ? path.dirname(inputPath)
+        : inputPath;
 
 function formatBytes(bytes: number, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
@@ -95,4 +96,4 @@ function convertDirectory(inputDir: string, outputDir: string, baseDir: string =
 }
 
 printHeader();
-convertDirectory(inputDir, outputDir);
+convertDirectory(inputPath, outputDir);
