@@ -9,7 +9,7 @@ const packageJson = require('../package.json');
 
 program
     .version(packageJson.version)
-    .option('-i, --input <dir>', 'Input directory', 'public')
+    .option('-i, --input <path>', 'Input file or directory (default: public)', 'public')
     .option('-o, --output <dir>', 'Output directory (defaults to input path)', '')
     .option('-q, --quality <number>', 'Quality of the output image (1-100)', '80')
     .parse(process.argv);
@@ -96,4 +96,18 @@ function convertDirectory(inputDir: string, outputDir: string, baseDir: string =
 }
 
 printHeader();
-convertDirectory(inputPath, outputDir);
+
+if (isInputFile) {
+    const ext = path.extname(inputPath).toLowerCase();
+    if (!['.jpg', '.jpeg', '.png', '.gif'].includes(ext)) {
+        console.error(`Unsupported file format "${ext}" for file "${inputPath}".`);
+        process.exit(1);
+    }
+
+    const fileName = path.basename(inputPath, ext);
+    const relativePath = path.basename(inputPath);
+    const outputFile = path.join(outputDir, `${fileName}.webp`);
+    convertFile(inputPath, outputFile, relativePath);
+} else {
+    convertDirectory(inputPath, outputDir);
+}
